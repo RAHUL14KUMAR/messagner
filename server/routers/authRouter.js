@@ -4,6 +4,16 @@ const users=require('../Schema/userSchema')
 const bcrypt=require('bcryptjs');
 const jwt=require("jsonwebtoken");
 const protect=require('../middleware/authMiddleware');
+const rateLimiter = require("../controllers/rateLimiter");
+const rateLimit=require('express-rate-limit')
+
+const authLimiter=rateLimit({
+  windowMs:2*60*1000,
+  max:5,
+  message:"Too many requests from this IP, please try again after 2 minutes",
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+})
 
 const generateJwt=(id)=>{
     return jwt.sign({id},process.env.SECRET_KEY,{expiresIn:"30d"});
@@ -19,7 +29,7 @@ router.get('/user',protect,async(req,res)=>{
     })
 })
 
-router.post("/login", async(req, res) => {
+router.post("/login",rateLimiter, async(req, res) => {
 
   const isUserPresent=await users.findOne({username:req.body.vals.username})
   if(!isUserPresent){
@@ -40,7 +50,7 @@ router.post("/login", async(req, res) => {
   }
 });
 
-router.post("/signup", async(req, res) => {
+router.post("/signup",authLimiter, async(req, res) => {
 
   const userExisting=await users.findOne({username:req.body.vals.username})
 
