@@ -4,6 +4,7 @@ const cors = require("cors");
 const connect = require("./Database/db");
 const authRouter = require("./routers/authRouter");
 const redisClient=require("./redis");
+const authenticateToken=require('./middleware/authenticateToken');
 
 const app = express();
 app.use(express.json());
@@ -16,7 +17,7 @@ const port = process.env.PORT || 4000;
 
 const io = require("socket.io")(server, {
   cors: {
-    origin: "http://localhost:3000/",
+    origin: "*",
   },
 });
 
@@ -26,7 +27,17 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRouter);
 
-io.on("connection", async (socket) => {});
+io.use(authenticateToken);
+
+io.on("connection", async (socket) => {
+
+  console.log(`user connected with info ${socket.user}`);
+  console.log(socket.id)
+
+  socket.on("disconnect",()=>{
+    console.log(`user disconnected with info ${socket.user}`)
+  })
+});
 
 connect();
 
