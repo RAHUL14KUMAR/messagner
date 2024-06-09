@@ -33,9 +33,10 @@ io.on("connection", async (socket) => {
 
   console.log(`user connected with info ${socket.user}`);
   console.log(socket.id)
+  redisClient.HSET(`user:${socket.user.username}`,"userid",JSON.stringify(socket.user._id))
 
   socket.on("disconnect",()=>{
-    console.log(`user disconnected with info ${socket.user}`)
+    console.log(`user disconnected with info ${socket.user._id}`)
   })
 });
 
