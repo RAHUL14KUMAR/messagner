@@ -5,6 +5,7 @@ const redisClient = require("../redis");
 async function authenticateToken(socket, next) {
     try {
         const token = socket.handshake.auth.token;
+        let b;
         if (!token) {
             return next(new Error("No token provided"));
         }
@@ -18,6 +19,7 @@ async function authenticateToken(socket, next) {
         next();
     } catch (error) {
         // res.status(401);
+        console.log(error)
         throw new Error("unauthorized");
     }
 }

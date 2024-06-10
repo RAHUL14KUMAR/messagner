@@ -1,25 +1,33 @@
 import { useContext, useEffect } from "react";
-import { io } from "socket.io-client";
-import { AccountContext } from "../AccountContext";
+import { useStateValue } from "../../stateProvider";
 
-const useSocketSetup = () => {
-    const { user,setUser } = useContext(AccountContext);
+const useSocketSetup = (setFriendList) => {
+   const[{user,socket},dispatch]=useStateValue();
 
-    const socket = io('http://localhost:4000',{
-        autoConnect:false,
-        auth: {
-            token: `${user.user.token}`
-        }
-    });
+    
     useEffect(() => {
-        socket.connect();
+        console.log("from useSocket",socket)
+
+        socket.on("friends",friendList=>{
+            setFriendList(friendList);
+        })
+        socket.on("connected", (status, username) => {
+            setFriendList(prevFriends => {
+              return [...prevFriends].map(friend => {
+                if (friend.username === username) {
+                  friend.connected = status;
+                }
+                return friend;
+              });
+            });
+          });
         socket.on("connect_error", () => {
-            setUser({ loggedIn: false });
+            // setusernull
         });
         return () => {
-        socket.off("connect_error");
+            socket.off("connect_error");
         };
-    }, [setUser]);
+    }, [user,setFriendList]);
 };
 
 export default useSocketSetup;
