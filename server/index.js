@@ -7,7 +7,6 @@ const redisClient=require("./redis");
 const authenticateToken=require('./middleware/authenticateToken');
 
 const {onDisconnect, addFriend, parseFriendList, dm}=require('./controllers/SocketController');
-const { disconnect } = require("process");
 
 const app = express();
 app.use(express.json());
